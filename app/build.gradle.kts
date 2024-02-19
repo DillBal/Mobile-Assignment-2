@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
 
 android {
@@ -42,6 +43,13 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+
+    implementation("com.squareup.moshi:moshi:1.15.0")
+
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
 
     implementation("com.google.android.material:material:1.11.0")
 

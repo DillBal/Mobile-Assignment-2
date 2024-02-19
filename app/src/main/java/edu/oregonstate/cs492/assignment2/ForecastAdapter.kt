@@ -7,13 +7,16 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import edu.oregonstate.cs492.assignment2.data.ForecastPeriod
+import edu.oregonstate.cs492.assignment2.data.WeatherItemClass
+import edu.oregonstate.cs492.assignment2.data.WeatherService
 import java.util.Calendar
 import java.util.Locale
 
-class ForecastAdapter(private val forecastPeriods: List<ForecastPeriod>) :
-    RecyclerView.Adapter<ForecastAdapter.ViewHolder>() {
 
-    override fun getItemCount() = forecastPeriods.size
+class ForecastAdapter() :
+    RecyclerView.Adapter<ForecastAdapter.ViewHolder>() {
+    private var weatherList = listOf<WeatherItemClass>()
+    override fun getItemCount() = weatherList.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -21,8 +24,16 @@ class ForecastAdapter(private val forecastPeriods: List<ForecastPeriod>) :
         return ViewHolder(view)
     }
 
+    fun updateWeatherList(newWeatherList: List<WeatherItemClass>?) {
+        notifyItemRangeRemoved(0, weatherList.size)
+        weatherList = newWeatherList ?: listOf()
+        notifyItemRangeInserted(0, weatherList.size)
+    }
+
+    override fun getItemCount() = weatherList.size
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(forecastPeriods[position])
+        holder.bind(weatherList[position])
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -45,18 +56,12 @@ class ForecastAdapter(private val forecastPeriods: List<ForecastPeriod>) :
             }
         }
 
-        fun bind(forecastPeriod: ForecastPeriod) {
-            currentForecastPeriod = forecastPeriod
+        fun bind(forecastPeriod: WeatherItemClass) {
+            currentForecastPeriod = weatherItemClass
 
             val cal = Calendar.getInstance()
             cal.set(forecastPeriod.year, forecastPeriod.month, forecastPeriod.day)
 
-            monthTV.text = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())
-            dayTV.text = cal.get(Calendar.DAY_OF_MONTH).toString()
-            highTempTV.text = forecastPeriod.highTemp.toString() + "°F"
-            lowTempTV.text = forecastPeriod.lowTemp.toString() + "°F"
-            popTV.text = (forecastPeriod.pop * 100.0).toInt().toString() + "% precip."
-            shortDescTV.text = forecastPeriod.shortDesc
         }
     }
 }
