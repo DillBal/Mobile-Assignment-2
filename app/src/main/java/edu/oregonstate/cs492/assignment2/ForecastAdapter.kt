@@ -30,7 +30,6 @@ class ForecastAdapter() :
         notifyItemRangeInserted(0, weatherList.size)
     }
 
-    override fun getItemCount() = weatherList.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(weatherList[position])
@@ -43,25 +42,39 @@ class ForecastAdapter() :
         private val lowTempTV: TextView = view.findViewById(R.id.tv_low_temp)
         private val shortDescTV: TextView = view.findViewById(R.id.tv_short_description)
         private val popTV: TextView = view.findViewById(R.id.tv_pop)
-        private lateinit var currentForecastPeriod: ForecastPeriod
 
-        init {
-            view.setOnLongClickListener {
+
+        fun bind(weatherItemClass: WeatherItemClass) {
+            val firstWeatherData = weatherItemClass.list.firstOrNull()
+
+            monthTV.text = getMonthFromDate(firstWeatherData?.dt ?: 0)
+            dayTV.text = getDayFromDate(firstWeatherData?.dt ?: 0)
+            highTempTV.text = firstWeatherData?.main?.tempMax?.toString() ?: ""
+            lowTempTV.text = firstWeatherData?.main?.tempMin?.toString() ?: ""
+            shortDescTV.text = firstWeatherData?.weather?.firstOrNull()?.description ?: ""
+            popTV.text = firstWeatherData?.pop.toString()
+
+            itemView.setOnLongClickListener {
                 Snackbar.make(
-                    view,
-                    currentForecastPeriod.longDesc,
+                    itemView,
+                    firstWeatherData?.weather?.firstOrNull()?.description ?: "",
                     Snackbar.LENGTH_LONG
                 ).show()
                 true
             }
         }
 
-        fun bind(forecastPeriod: WeatherItemClass) {
-            currentForecastPeriod = weatherItemClass
+        // Helper functions to extract month and day from timestamp
+        private fun getMonthFromDate(timestamp: Long): String {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = timestamp * 1000
+            return (calendar.get(Calendar.MONTH) + 1).toString()
+        }
 
-            val cal = Calendar.getInstance()
-            cal.set(forecastPeriod.year, forecastPeriod.month, forecastPeriod.day)
-
+        private fun getDayFromDate(timestamp: Long): String {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = timestamp * 1000
+            return calendar.get(Calendar.DAY_OF_MONTH).toString()
         }
     }
 }

@@ -3,16 +3,18 @@ package edu.oregonstate.cs492.assignment2
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import edu.oregonstate.cs492.assignment2.data.ForecastPeriod
+import com.google.android.material.progressindicator.CircularProgressIndicator
+import edu.oregonstate.cs492.assignment2.data.WeatherSearchResults
 import edu.oregonstate.cs492.assignment2.data.WeatherService
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.http.Query
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
 
 class MainActivity : AppCompatActivity() {
     private val weatherService = WeatherService.create()
@@ -24,35 +26,38 @@ class MainActivity : AppCompatActivity() {
         val forecastListRV = findViewById<RecyclerView>(R.id.rv_forecast_list)
         forecastListRV.layoutManager = LinearLayoutManager(this)
         forecastListRV.setHasFixedSize(true)
-
-        //val forecastDataItems = this.initForecastPeriods()
-        //forecastListRV.adapter = ForecastAdapter(forecastDataItems)
-
+        forecastListRV.adapter = adapter
+        // Call the weather API
         doWeatherSearch("44.5646", "123.2620")
-
-
-
     }
-    private fun doWeatherSearch(lat : String, lon : String) {
-        weatherService.searchWeather(lat, lon).enqueue(object : Callback<String>  {
-            override fun onResponse(call: Call<String>, response: Response<String>) {
-                Log.d("MainActivity", "Status code: ${response.code()}")
-                Log.d("MainActivity", "Response body: ${response.body()}")
-//                if (response.isSuccessful) {
-//                    val moshi = Moshi.Builder().build()
-//                    val jsonAdapter: JsonAdapter<WeatherResults> =
-//                        moshi.adapter(WeatherResults::class.java)
-                    //val weatherResults = jsonAdapter.fromJson(response.body())
-                    //adapter.updateRepoList(searchResults?.items)
-//                }
+
+    private fun doWeatherSearch(lat: String, lon: String) {
+        weatherService.searchWeather(lat, lon).enqueue(object : Callback<WeatherSearchResults> {
+            override fun onResponse(
+                call: Call<WeatherSearchResults>,
+                response: Response<WeatherSearchResults>
+            ) {
+                if (response.isSuccessful) {
+                    val weatherSearchResults = response.body()
+                    if (weatherSearchResults != null) {
+                        val moshi = Moshi.Builder().build()
+                        val jsonAdapter: JsonAdapter<WeatherSearchResults> =
+                            moshi.adapter(WeatherSearchResults::class.java)
+                        adapter.updateWeatherList(weatherSearchResults.items)
+                    } else {
+                        Log.e("MainActivity", "Weather data is null")
+                    }
+                } else {
+                    Log.e("MainActivity", "Failed to fetch weather data: ${response.code()}")
+                }
             }
 
-            override fun onFailure(call: Call<String>, t: Throwable) {
-                Log.d("Main Activity", "Error making API call: ${t.message}")
+            override fun onFailure(call: Call<WeatherSearchResults>, t: Throwable) {
+                Log.e("MainActivity", "Error making API call: ${t.message}")
             }
-
         })
     }
+}
     /*
      * This function simply initializes a list of dummy weather data.  You won't need this anymore
      * once you start fetching data from the OpenWeather API.
@@ -161,4 +166,3 @@ class MainActivity : AppCompatActivity() {
 //            )
 //        )
 //    }
-}
